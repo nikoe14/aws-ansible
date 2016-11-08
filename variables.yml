@@ -1,0 +1,7 @@
+instance_type: t2.micro
+security_group: servers-security-group 
+lb_name: LoadBalancer
+image: ami-2d39803a 
+region: us-east-1 
+keypair: test
+count: 1

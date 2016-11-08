@@ -1,0 +1,38 @@
+- name: Configure VM(s)
+  user: ubuntu
+  become: true
+  become_method: sudo
+  hosts: servers
+  tasks:
+
+    - name: Add the new GPG key
+      apt_key: keyserver=hkp://p80.pool.sks-keyservers.net:80 id=58118E89F3A912897C070ADBF76221572C52609D
+
+    - name: Add repository and update
+      apt_repository: repo='deb https://apt.dockerproject.org/repo ubuntu-trusty main' update_cache=yes
+    
+    - apt: name=docker-engine state=present
+    
+    - name: Add ubuntu to docker group
+      user:
+        name: ubuntu
+        groups: docker
+        append: yes
+    
+    - name: Copy dockerfile
+      copy: src=dockerfile dest=/tmp owner=ubuntu group=ubuntu mode=0644
+    
+    - name: Copy Scripts directory 
+      copy: src=scripts dest=/tmp owner=ubuntu group=ubuntu mode=0775
+    
+    - name: Build docker image
+      command: docker build -t container .
+      args:
+        chdir: /tmp
+    
+    - name: Run docker container
+      command: docker run -d -p 8080:8080 container
+      args:
+        chdir: /tmp    
+
+- include: modify_health_check_ELB.yml

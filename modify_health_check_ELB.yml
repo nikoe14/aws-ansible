@@ -1,0 +1,34 @@
+---
+- name: Modify Health Check ELB
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tags: provisioning
+  
+  vars_files:
+    - variables.yml
+
+  tasks:
+
+    - name: Modify Health Check ELB
+      ec2_elb_lb:
+        name: "{{ lb_name }}"
+        region: "{{ region }}"
+        zones:
+          - us-east-1a
+          - us-east-1c
+        state: present
+        listeners:
+           - protocol: http
+             load_balancer_port: 80
+             instance_port: 8080
+        health_check:
+          health_check:
+          ping_protocol: http 
+          ping_port: 8080
+          ping_path: "/index.jsp"
+          response_timeout: 10 
+          interval: 30 
+          unhealthy_threshold: 10
+          healthy_threshold: 10
+      register: elb 
